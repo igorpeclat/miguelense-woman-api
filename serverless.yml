@@ -1,0 +1,70 @@
+org: igorpeclat
+console: true
+service: miguelense-woman-api
+
+plugins:
+  - serverless-plugin-optimize
+  - serverless-plugin-utils
+  - serverless-dynamodb-local
+  - serverless-offline
+  - serverless-plugin-warmup
+functions:
+  app: # The name of the lambda function
+    # The module 'handler' is exported in the file 'src/lambda'
+    handler: dist/serverless.handler
+    events:
+      - http:
+          method: any
+          path: /{any+}
+provider:
+  name: aws
+  runtime: nodejs14.x
+  apiGateway:
+    shouldStartNameWithService: true
+
+  environment:
+    AWS_NODEJS_CONNECTION_REUSE_ENABLED: 1
+    NODE_OPTIONS: --enable-source-maps --stack-trace-limit=1000
+    APP_PORT: 3000
+    APP_GLOBAL_PREFIX: mulher-miguelense
+    JWT_SECRET: abcdABCD1234554321
+    JWT_EXP_H: 3600s
+    JWT_EXP_D: 1d
+    AWS_ACCESS_KEY_ID: AKIA3CQPVP6IXJHN2TMW
+    AWS_SECRET_ACCESS_KEY: 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
+    AWS_REGION: us-east-1
+    STAGE: dev
+  iam:
+    role:
+      statements:
+        - Effect: "Allow"
+          Action:
+            - "dynamodb:DescribeTable"
+            - "dynamodb:Query"
+            - "dynamodb:Scan"
+            - "dynamodb:GetItem"
+            - "dynamodb:PutItem"
+            - "dynamodb:UpdateItem"
+            - "dynamodb:DeleteItem"
+
+          Resource: arn:aws:dynamodb:us-east-1:*:table/*
+
+custom:
+  warmup:
+    enabled: true
+  esbuild:
+    bundle: true
+    minify: false
+    sourcemap: true
+    exclude: aws-sdk
+    target: node14
+    define: "require.resolve: undefined"
+    platform: node
+    concurrency: 10
+
+  dynamodb:
+    start:
+      port: 8000
+      inMemory: true
+      migrate: true
+    stages: dev
